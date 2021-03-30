@@ -23,6 +23,8 @@ struct VideoPlayerView: View {
     
     @State var lastPlayInSeconds:Double = 0.0
     
+    @State var playerItemDidReachEnd = false
+    
     var body: some View {
         ScrollView {
             VStack() {
@@ -36,6 +38,7 @@ struct VideoPlayerView: View {
                         .lastPlayInSeconds($lastPlayInSeconds)
                         .backInSeconds($backInSeconds)
                         .forwardInSeconds($forwardInSeconds)
+                        .playerItemDidReachEnd($playerItemDidReachEnd)
                         .frame(width: nil, height: CGFloat(exactly:300), alignment: .center)
                 }
                 
@@ -103,8 +106,18 @@ struct VideoPlayerView: View {
                                 .frame(width: 30, height: 30)
                         }
                         .frame(width: 50, height: 50)
-                        
                     }.padding(.top)
+                    
+                    Toggle(isOn: $playerItemDidReachEnd) {
+//                        print("Did it reach the end: \($playerItemDidReachEnd)")
+
+                        Text("Player Reached End")
+                    }
+                    
+                    
+                    Text(String(playerItemDidReachEnd))
+                    
+                    
                 }.padding(.horizontal)
             }
         }

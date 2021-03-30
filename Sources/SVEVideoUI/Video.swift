@@ -44,6 +44,9 @@ public struct Video {
     /// Set how many seconds you want to forward the video
     var forwardInSeconds: Binding<Double>
 
+    /// Receive a notification when the player reached the end
+    var playerItemDidReachEnd: Binding<Bool>
+
     public init(url: URL, startVideoAtSeconds:Binding<Double> = .constant(0.0), playing: Binding<Bool> = .constant(true), muted: Binding<Bool> = .constant(false))
     {
         videoURL = url
@@ -54,6 +57,7 @@ public struct Video {
         lastPlayInSeconds = .constant(0.0)
         backInSeconds = .constant(0.0)
         forwardInSeconds = .constant(0.0)
+        playerItemDidReachEnd = .constant(false)
     }
     
     
@@ -230,7 +234,13 @@ extension Video {
         }
 
         @objc public func playerItemDidReachEnd(notification: NSNotification) {
+            video.playerItemDidReachEnd.wrappedValue = true
+            
             if video.loop.wrappedValue {
+                DispatchQueue.main.async {
+                    self.video.playerItemDidReachEnd.wrappedValue = false
+                }
+                
                 player?.seek(to: .zero)
                 player?.play()
             } else {
@@ -252,6 +262,10 @@ extension Video {
         func togglePlay(isPlaying: Bool, startVideoAtSeconds:Double?) {
             if isPlaying {
                 if player?.currentItem?.duration == player?.currentTime() {
+                    DispatchQueue.main.async {
+                        self.video.playerItemDidReachEnd.wrappedValue = false
+                    }
+
                     player?.seek(to: .zero)
                     player?.play()
                     return
@@ -260,6 +274,10 @@ extension Video {
                 seekOnStartToSecondsIfNeeded(startVideoAtSeconds: startVideoAtSeconds)
                 player?.play()
             } else {
+//                DispatchQueue.main.async {
+//                    self.video.playerItemDidReachEnd.wrappedValue = false
+//                }
+                
                 seekOnStartToSecondsIfNeeded(startVideoAtSeconds: startVideoAtSeconds)
                 player?.pause()
             }
@@ -387,6 +405,12 @@ extension Video {
     public func forwardInSeconds(_ value: Binding<Double>) -> Video {
         var new = self
         new.forwardInSeconds = value
+        return new
+    }
+    
+    public func playerItemDidReachEnd(_ value: Binding<Bool>) -> Video {
+        var new = self
+        new.playerItemDidReachEnd = value
         return new
     }
 
